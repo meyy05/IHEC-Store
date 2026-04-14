@@ -47,7 +47,6 @@ nav {
   background: rgba(13,27,62,.97);
   backdrop-filter: blur(12px);
   border-bottom: 1px solid rgba(201,168,76,.2);
-  /* transition for shadow */
   transition: box-shadow .3s ease;
 }
 
@@ -56,20 +55,30 @@ nav.scrolled {
 }
 
 .brand { display: flex; align-items: center; gap: .75rem; flex-shrink: 0; }
+
+/* ── LOGO: white bg for clarity ── */
 .brand-logo {
-  width: 36px; height: 36px;
-  background: var(--gold);
-  border-radius: 8px;
+  width: 52px; height: 52px;
+  background: var(--white);
+  border-radius: 10px;
   display: flex; align-items: center; justify-content: center;
   overflow: hidden;
+  padding: 5px;
+  box-shadow: 0 0 0 1.5px rgba(201,168,76,.45);
 }
-.brand-logo img { width: 100%; height: 100%; object-fit: cover; }
+.brand-logo img {
+  width: 100%; height: 100%;
+  object-fit: contain;
+  border-radius: 0;
+  filter: none;
+}
 .brand-logo-letter {
-  font-family: var(--font-serif); font-size: 1.2rem; font-style: italic;
+  font-family: var(--font-serif); font-size: 1.4rem; font-style: italic;
   color: var(--navy);
   display: flex; align-items: center; justify-content: center;
   width: 100%; height: 100%;
 }
+
 .brand-name {
   font-size: .95rem; font-weight: 600; letter-spacing: .08em;
   color: var(--white); text-transform: uppercase;
@@ -130,7 +139,6 @@ nav.scrolled {
   overflow: hidden;
 }
 
-/* Panneau navy à droite en diagonale */
 .hero::after {
   content: '';
   position: absolute;
@@ -141,29 +149,14 @@ nav.scrolled {
   clip-path: polygon(10% 0, 100% 0, 100% 100%, 0% 100%);
 }
 
-/* Cercle doré décoratif côté droit */
-.hero::before {
-  content: '';
-  position: absolute;
-  right: 6%;
-  top: 50%;
-  transform: translateY(-50%);
-  width: 300px; height: 300px;
-  border-radius: 50%;
-  border: 1px solid rgba(201,168,76,.18);
-  z-index: 1;
-  pointer-events: none;
-  box-shadow: inset 0 0 60px rgba(201,168,76,.04);
-}
+/* hero::before removed — circle moved to .hero-right::before for proper alignment */
 
-/* Colonne texte gauche */
 .hero > div:first-child {
   position: relative; z-index: 2;
   padding: 5rem 3rem 5rem 0;
   max-width: 500px;
 }
 
-/* Label */
 .hero-label {
   display: inline-flex; align-items: center; gap: .6rem;
   font-size: .7rem; font-weight: 700; letter-spacing: .18em;
@@ -178,7 +171,6 @@ nav.scrolled {
   flex-shrink: 0;
 }
 
-/* Titre */
 .hero h1 {
   font-family: var(--font-serif);
   font-size: clamp(3rem, 4.2vw, 4.8rem);
@@ -194,7 +186,6 @@ nav.scrolled {
   display: block;
 }
 
-/* Description */
 .hero-desc {
   font-size: .96rem;
   color: var(--text-muted);
@@ -203,7 +194,6 @@ nav.scrolled {
   margin-bottom: 2.6rem;
 }
 
-/* Boutons */
 .hero-actions {
   display: flex; align-items: center; gap: 1.4rem; flex-wrap: wrap;
 }
@@ -229,50 +219,74 @@ nav.scrolled {
   display: inline-flex; align-items: center; gap: .45rem;
   transition: color .2s; padding: 0;
 }
-.btn-ghost span.arrow {
-  display: inline-block;
-  transition: transform .2s;
-}
+.btn-ghost span.arrow { display: inline-block; transition: transform .2s; }
 .btn-ghost:hover { color: var(--gold); }
 .btn-ghost:hover span.arrow { transform: translateX(5px); }
 
-/* Colonne droite — minimaliste, fond navy, image centrée */
+/* ── HERO RIGHT — product centered on the decorative circle ── */
 .hero-right {
   position: relative; z-index: 2;
   display: flex; align-items: center; justify-content: center;
   height: 100%; min-height: calc(100vh - 68px);
 }
 
-/* Cadre photo épuré */
-.hero-product-frame {
-  position: relative;
-  width: 260px; height: 320px;
-  border-radius: 4px;
-  overflow: hidden;
+/* Decorative ring centered on the product */
+.hero-right::before {
+  content: '';
+  position: absolute;
+  width: 340px; height: 340px;
+  border-radius: 50%;
+  border: 1px solid rgba(201,168,76,.25);
+  box-shadow: inset 0 0 60px rgba(201,168,76,.05);
+  pointer-events: none;
+  z-index: 0;
+}
+.hero-right::after {
+  content: '';
+  position: absolute;
+  width: 420px; height: 420px;
+  border-radius: 50%;
+  border: 1px solid rgba(201,168,76,.08);
+  pointer-events: none;
+  z-index: 0;
 }
 
-/* Contour doré fin */
+/* Frame sized to fit inside the ring */
+.hero-product-frame {
+  position: relative; z-index: 2;
+  width: 300px; height: 300px;
+  border-radius: 50%;
+  overflow: hidden;
+  background: transparent;
+}
+
+/* Subtle gold glow ring around the frame */
 .hero-product-frame::before {
   content: '';
   position: absolute;
-  inset: 12px;
-  border: 1px solid rgba(201,168,76,.25);
-  border-radius: 2px;
+  inset: -3px;
+  border-radius: 50%;
+  border: 1px solid rgba(201,168,76,.35);
   z-index: 3;
   pointer-events: none;
 }
 
+/* No ::after accent line on circular frame */
+
 .hero-product-frame img {
+  position: absolute;
+  inset: 0;
   width: 100%; height: 100%;
   object-fit: contain;
-  position: relative; z-index: 2;
-  filter: drop-shadow(0 20px 40px rgba(0,0,0,.35));
+  object-position: center center;
+  z-index: 2;
+  filter: drop-shadow(0 20px 40px rgba(0,0,0,.5));
   animation: floatA 5s ease-in-out infinite;
+  padding: 20px;
 }
 
-/* Placeholder si pas d'image */
 .hero-product-placeholder {
-  width: 100%; height: 100%;
+  position: absolute; inset: 0;
   display: flex; flex-direction: column;
   align-items: center; justify-content: center; gap: .8rem;
   color: rgba(255,255,255,.2); font-size: .78rem;
@@ -281,17 +295,6 @@ nav.scrolled {
 }
 .hero-product-placeholder svg { stroke: rgba(255,255,255,.15); }
 
-/* Ligne dorée verticale décorative à gauche du cadre */
-.hero-product-frame::after {
-  content: '';
-  position: absolute;
-  left: 0; top: 15%; bottom: 15%;
-  width: 2px;
-  background: linear-gradient(to bottom, transparent, var(--gold), transparent);
-  z-index: 3;
-}
-
-/* Animations */
 @keyframes floatA {
   0%, 100% { transform: translateY(0); }
   50%       { transform: translateY(-10px); }
@@ -327,14 +330,12 @@ nav.scrolled {
 .card:hover { transform: translateY(-6px); box-shadow: var(--shadow); }
 .card.hidden { display: none; }
 
-/* Stagger filter animation */
 @keyframes fadeInUp {
   from { opacity: 0; transform: translateY(16px); }
   to   { opacity: 1; transform: translateY(0); }
 }
 .card.fade-in { animation: fadeInUp .35s ease both; }
 
-/* Scroll reveal */
 .reveal-el { opacity: 0; transform: translateY(22px); transition: opacity .45s ease, transform .45s ease; }
 .reveal-el.revealed { opacity: 1; transform: translateY(0); }
 
@@ -359,7 +360,6 @@ nav.scrolled {
 }
 .card-icon svg { width: 38px; height: 38px; stroke: rgba(255,255,255,.7); }
 
-/* Real image support */
 .card-img img.card-real-img {
   position: absolute; inset: 0; width: 100%; height: 100%;
   object-fit: cover; z-index: 2;
@@ -423,7 +423,6 @@ nav.scrolled {
 .ci-label { font-size: .72rem; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: var(--text-muted); margin-bottom: .15rem; }
 .ci-val { font-size: .92rem; font-weight: 500; color: var(--navy); }
 
-/* Form */
 .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem; }
 .form-group { margin-bottom: 1rem; position: relative; }
 .form-label { display: block; font-size: .78rem; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; color: var(--text-muted); margin-bottom: .45rem; }
@@ -443,7 +442,6 @@ nav.scrolled {
   background-repeat: no-repeat; background-position: right 1rem center; padding-right: 2.5rem; cursor: pointer;
 }
 
-/* Form validation states */
 .form-input.field-error, .form-textarea.field-error {
   border-color: var(--error);
   box-shadow: 0 0 0 3px rgba(192,57,43,.1);
