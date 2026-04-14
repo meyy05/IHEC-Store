@@ -505,3 +505,128 @@ function showToast(message) {
   clearTimeout(toastTimer);
   toastTimer = setTimeout(() => toast.classList.remove('show'), 3000);
 }
+
+// ── FLIP CARD ─────────────────────────────────────────────
+function flipCard(id) {
+  const container = document.getElementById(id);
+  if (!container) return;
+  container.classList.toggle('flipped');
+}
+
+// ── CLASSE SCROLL SELECTOR ────────────────────────────────
+function initClasseSelector() {
+  const track = document.getElementById('classeTrack');
+  if (!track) return;
+
+  track.querySelectorAll('.classe-item').forEach(item => {
+    item.addEventListener('click', () => {
+      track.querySelectorAll('.classe-item').forEach(i => i.classList.remove('selected'));
+      item.classList.add('selected');
+      document.getElementById('orderClasse').value = item.dataset.val;
+      // Smooth scroll to center the selected item
+      item.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+    });
+  });
+}
+
+// ── THANK YOU MODAL ───────────────────────────────────────
+function showThankyou(tel) {
+  const overlay = document.getElementById('thankyouOverlay');
+  const modal   = document.getElementById('thankyouModal');
+  if (!overlay || !modal) return;
+
+  overlay.classList.add('show');
+  modal.classList.add('show');
+  document.body.style.overflow = 'hidden';
+  launchConfetti();
+}
+
+function closeThankyou() {
+  document.getElementById('thankyouOverlay')?.classList.remove('show');
+  document.getElementById('thankyouModal')?.classList.remove('show');
+  document.body.style.overflow = '';
+}
+
+function launchConfetti() {
+  const container = document.getElementById('thankyouConfetti');
+  if (!container) return;
+  container.innerHTML = '';
+
+  const colors = ['#c9a84c', '#e8c97a', '#0d1b3e', '#1e306a', '#ffffff', '#f5f0e8'];
+  const shapes = ['2px', '4px', '6px'];
+
+  for (let i = 0; i < 48; i++) {
+    const piece = document.createElement('div');
+    piece.className = 'confetti-piece';
+    const color = colors[Math.floor(Math.random() * colors.length)];
+    const size  = shapes[Math.floor(Math.random() * shapes.length)];
+    piece.style.cssText = `
+      left: ${Math.random() * 100}%;
+      width: ${size}; height: ${size};
+      background: ${color};
+      border-radius: ${Math.random() > .5 ? '50%' : '2px'};
+      --dur: ${0.8 + Math.random() * 1.4}s;
+      --delay: ${Math.random() * 0.6}s;
+    `;
+    container.appendChild(piece);
+  }
+}
+
+// ── OVERRIDE submitOrder to show thank you ────────────────
+// Store original and replace
+const _originalSubmitOrder = submitOrder;
+
+// Redefine submitOrder entirely with thank-you support
+window.submitOrder = function() {
+  const prenom = document.getElementById('orderPrenom');
+  const nom    = document.getElementById('orderNom');
+  const tel    = document.getElementById('orderTel');
+  let valid = true;
+
+  [prenom, nom, tel].forEach(field => {
+    clearError(field);
+    if (!field.value.trim()) { showError(field, 'Ce champ est requis'); valid = false; }
+  });
+
+  if (tel && tel.value && !/^[0-9\s\+\-\.]{6,15}$/.test(tel.value.trim())) {
+    showError(tel, 'Numéro invalide'); valid = false;
+  }
+
+  if (!valid) return;
+
+  const btn = document.querySelector('.btn-checkout-modal');
+  btn.disabled = true;
+  btn.textContent = '⏳ Envoi en cours...';
+
+  setTimeout(() => {
+    // Clear cart
+    cart = [];
+    saveCart(cart);
+    updateCartCount(true);
+
+    // Close order modal
+    closeOrderModal();
+
+    // Reset button
+    btn.textContent = 'Confirmer la commande →';
+    btn.style.background = '';
+    btn.disabled = false;
+
+    // Show thank you modal
+    showThankyou(tel.value.trim());
+  }, 900);
+};
+
+// ── HOOK INTO DOMContentLoaded ────────────────────────────
+document.addEventListener('DOMContentLoaded', () => {
+  initClasseSelector();
+
+  // Close thank you on overlay click
+  const tyOverlay = document.getElementById('thankyouOverlay');
+  if (tyOverlay) tyOverlay.addEventListener('click', closeThankyou);
+});
+
+// Close thank you modal on Escape
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape') closeThankyou();
+});

@@ -52,7 +52,7 @@
     </button>
   </div>
 
-  <!-- HERO -->
+<!-- HERO -->
   <section class="hero">
     <div class="hero-left">
       <div class="hero-label">Boutique officielle &mdash; IHEC Store</div>
@@ -101,9 +101,20 @@
 
       <!-- Hoodie -->
       <div class="card" data-cat="clothing">
-        <div class="card-img c1">
-          <img src="Images/hoodie1.png" alt="Hoodie IHEC Carthage">
-          
+        <div class="card-img c1 flip-container" id="flip-hoodie">
+          <div class="flip-inner">
+            <div class="flip-front">
+              <img src="Images/hoodie1.png" alt="Hoodie IHEC Carthage - Face avant">
+            </div>
+            <div class="flip-back">
+              <img src="Images/hoodie2.png" alt="Hoodie IHEC Carthage - Face arrière"
+                onerror="this.src='Images/hoodie1.png'">
+            </div>
+          </div>
+          <button class="flip-btn" onclick="flipCard('flip-hoodie')" title="Voir l'autre face">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M1 4v6h6M23 20v-6h-6"/><path d="M20.49 9A9 9 0 005.64 5.64L1 10M23 14l-4.64 4.36A9 9 0 013.51 15"/></svg>
+            Retourner
+          </button>
         </div>
         <div class="card-body">
           <div class="card-name">Hoodie IHEC Carthage</div>
@@ -128,7 +139,7 @@
       <!-- T-shirt -->
       <div class="card" data-cat="clothing">
         <div class="card-img c1">
-          <img src="Images/T-shirt1.png" alt="T-shirt IHEC Carthage">
+          <img src="Images/T-shirt.jpg" alt="T-shirt IHEC Carthage">
           
         </div>
         <div class="card-body">
@@ -169,15 +180,27 @@
 
       <!-- Tote bag -->
       <div class="card" data-cat="accessories">
-        <div class="card-img c1">
-          <img src="Images/bag1.jpg" alt="Tote bag IHEC">
-          <div class="card-badge badge-new">Nouveau</div>
+        <div class="card-img c1 flip-container" id="flip-totebag">
+          <div class="flip-inner">
+            <div class="flip-front">
+              <img src="Images/bag1.jpg" alt="Tote bag IHEC - Face avant">
+              <div class="card-badge badge-new">Nouveau</div>
+            </div>
+            <div class="flip-back">
+              <img src="Images/bag2.jpg" alt="Tote bag IHEC - Face arrière"
+                onerror="this.src='Images/bag1.jpg'">
+            </div>
+          </div>
+          <button class="flip-btn" onclick="flipCard('flip-totebag')" title="Voir l'autre face">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M1 4v6h6M23 20v-6h-6"/><path d="M20.49 9A9 9 0 005.64 5.64L1 10M23 14l-4.64 4.36A9 9 0 013.51 15"/></svg>
+            Retourner
+          </button>
         </div>
         <div class="card-body">
           <div class="card-name">Tote bag IHEC</div>
           <div class="card-sub">Toile résistante · Usage quotidien</div>
           <div class="card-footer">
-            <div class="card-price">18 DT <span>/ pièce</span></div>
+            <div class="card-price">25 DT <span>/ pièce</span></div>
             <button class="card-add" onclick="addToCart(this)">+ Ajouter</button>
           </div>
         </div>
@@ -238,7 +261,7 @@
         <p class="contact-desc">Une question sur une commande ou un produit ? L'équipe NEWS vous répond rapidement.</p>
         <div class="contact-item">
           <div class="ci-icon"><svg viewBox="0 0 24 24" stroke-width="1.6"><path stroke-linecap="round" stroke-linejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25m19.5 0v.243a2.25 2.25 0 01-1.07 1.916l-7.5 4.615a2.25 2.25 0 01-2.36 0L3.32 8.91a2.25 2.25 0 01-1.07-1.916V6.75"/></svg></div>
-          <div><div class="ci-label">Email</div><div class="ci-val">news.official@ihec.ucar.tn</div></div>
+          <div><div class="ci-label">Email</div><div class="ci-val"><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="a5cbc0d2d68bcac3c3ccc6ccc4c9e5cccdc0c68bd0c6c4d78bd1cb">[email&#160;protected]</a></div></div>
         </div>
         <div class="contact-item">
           <div class="ci-icon"><svg viewBox="0 0 24 24" stroke-width="1.6"><path stroke-linecap="round" stroke-linejoin="round" d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1115 0z"/></svg></div>
@@ -333,8 +356,23 @@
         <input class="form-input" type="tel" id="orderTel" placeholder="ex: 55 123 456"/>
       </div>
       <div class="form-group">
-        <label class="form-label">Niveau </label>
-        <input class="form-input" type="text" id="orderClasse" placeholder="ex: L3 Finance 2026"/>
+        <label class="form-label">Classe / Promotion</label>
+        <div class="classe-scroll-selector" id="classeSelector">
+          <div class="classe-scroll-track" id="classeTrack">
+            <div class="classe-item" data-val="1BI">1 BI</div>
+            <div class="classe-item" data-val="2BI">2 BI</div>
+            <div class="classe-item" data-val="3BI">3 BI</div>
+            <div class="classe-item" data-val="1BA">1 BA</div>
+            <div class="classe-item" data-val="2BA">2 BA</div>
+            <div class="classe-item" data-val="3BA">3 BA</div>
+            <div class="classe-item" data-val="M1">Master 1</div>
+            <div class="classe-item" data-val="M2">Master 2</div>
+            <div class="classe-item" data-val="Autre">Autre</div>
+          </div>
+          <div class="classe-scroll-fade-left"></div>
+          <div class="classe-scroll-fade-right"></div>
+        </div>
+        <input type="hidden" id="orderClasse" value=""/>
       </div>
       <div class="form-group">
         <label class="form-label">Note (optionnel)</label>
@@ -347,8 +385,25 @@
         <span class="modal-total-val" id="modalTotal">0 DT</span>
       </div>
       <button class="btn-checkout-modal" onclick="submitOrder()">Confirmer la commande →</button>
-      <p class="modal-note">Paiement en espèces uniquement, à la récupération sur campus.</p>
+      <p class="modal-note">Paiement en espèces sur place.</p>
     </div>
+  </div>
+
+  <!-- THANK YOU MODAL -->
+  <div class="thankyou-overlay" id="thankyouOverlay"></div>
+  <div class="thankyou-modal" id="thankyouModal" role="dialog" aria-modal="true">
+    <div class="thankyou-confetti" id="thankyouConfetti"></div>
+    <div class="thankyou-icon">
+      <svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="var(--gold)" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+    </div>
+    <h2 class="thankyou-title">Merci pour votre commande !</h2>
+    <p class="thankyou-sub">Votre commande a bien été enregistrée.<br/>Nous vous contacterons très bientôt.</p>
+    <div class="thankyou-divider"></div>
+    <p class="thankyou-note">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 8.81 19.79 19.79 0 01.12 2.22a2 2 0 012-2.18h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L6.91 7.91a16 16 0 006.29 6.29l1.45-1.45a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 16.92z"/></svg>
+      Nous vous appellerons au numéro fourni
+    </p>
+    <button class="thankyou-close-btn" onclick="closeThankyou()">Retour à la boutique</button>
   </div>
 
   <script src="JavaScript.js"></script>
