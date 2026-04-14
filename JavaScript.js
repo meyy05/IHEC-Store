@@ -1,13 +1,16 @@
 /* ============================================================
-   IHEC STORE — JavaScript.js  (version pro)
+   IHEC STORE — JavaScript.js  (version améliorée)
    • localStorage panier persistant
+   • Menu hamburger mobile
+   • Sélection de taille obligatoire pour vêtements
+   • Modal de commande avec formulaire client
    • Animation compteur badge
-   • Validation formulaire
+   • Validation formulaire contact
    • Navbar shadow au scroll
    ============================================================ */
 
 // ── STORAGE HELPERS ──────────────────────────────────────
-const CART_KEY = 'ihec_cart_v1';
+const CART_KEY = 'ihec_cart_v2';
 
 function loadCart() {
   try { return JSON.parse(localStorage.getItem(CART_KEY)) || []; }
@@ -25,6 +28,9 @@ document.addEventListener('DOMContentLoaded', () => {
   initNavScroll();
   initScrollReveal();
   initFormValidation();
+  initSizeSelectors();
+  initHamburger();
+  initOrderModal();
 });
 
 // ── NAVBAR SHADOW ─────────────────────────────────────────
@@ -34,6 +40,67 @@ function initNavScroll() {
   const onScroll = () => nav.classList.toggle('scrolled', window.scrollY > 20);
   window.addEventListener('scroll', onScroll, { passive: true });
   onScroll();
+}
+
+// ── HAMBURGER MENU ────────────────────────────────────────
+function initHamburger() {
+  const hamburger = document.getElementById('hamburger');
+  if (!hamburger) return;
+  hamburger.addEventListener('click', toggleMobileMenu);
+}
+
+function toggleMobileMenu() {
+  const hamburger = document.getElementById('hamburger');
+  const menu      = document.getElementById('mobileMenu');
+  const overlay   = document.getElementById('mobileOverlay');
+  if (!menu) return;
+  const isOpen = menu.classList.contains('open');
+  if (isOpen) {
+    closeMobileMenu();
+  } else {
+    menu.classList.add('open');
+    overlay.classList.add('show');
+    hamburger.classList.add('open');
+    hamburger.setAttribute('aria-expanded', 'true');
+    document.body.style.overflow = 'hidden';
+  }
+}
+
+function closeMobileMenu() {
+  const hamburger = document.getElementById('hamburger');
+  const menu      = document.getElementById('mobileMenu');
+  const overlay   = document.getElementById('mobileOverlay');
+  if (!menu) return;
+  menu.classList.remove('open');
+  overlay.classList.remove('show');
+  if (hamburger) {
+    hamburger.classList.remove('open');
+    hamburger.setAttribute('aria-expanded', 'false');
+  }
+  document.body.style.overflow = '';
+}
+
+// Close mobile menu on Escape key
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape') {
+    closeMobileMenu();
+    closeCart();
+    closeOrderModal();
+  }
+});
+
+// ── SIZE SELECTORS ────────────────────────────────────────
+function initSizeSelectors() {
+  document.querySelectorAll('.size-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const group = btn.closest('.size-selector');
+      group.querySelectorAll('.size-btn').forEach(b => b.classList.remove('selected'));
+      btn.classList.add('selected');
+      // Hide required error if shown
+      const msg = group.querySelector('.size-required-msg');
+      if (msg) msg.classList.remove('show');
+    });
+  });
 }
 
 // ── CART DRAWER ───────────────────────────────────────────
@@ -58,13 +125,13 @@ function createCartDrawer() {
         <span>Total</span>
         <span id="drawerTotal">0 DT</span>
       </div>
-      <button class="btn-checkout" onclick="handleCheckout()">Commander →</button>
+      <button class="btn-checkout" onclick="openOrderModal()">Commander →</button>
       <button class="btn-clear" onclick="clearCart()">Vider le panier</button>
     </div>
   `;
   document.body.appendChild(drawer);
 
-  const navCartBtn = document.querySelector('.nav-cart');
+  const navCartBtn = document.getElementById('cartBtn');
   if (navCartBtn) navCartBtn.addEventListener('click', openCart);
 }
 
@@ -104,9 +171,13 @@ function renderCartItems() {
 
   container.innerHTML = cart.map((item, i) => `
     <div class="cart-item" data-index="${i}">
-      <div class="cart-item-icon">${item.icon}</div>
+      <div class="cart-item-icon">
+        <svg fill="none" viewBox="0 0 24 24" stroke-width="1.3" width="22" height="22" stroke="rgba(255,255,255,.7)">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 10.5V6a3.75 3.75 0 10-7.5 0v4.5m11.356-1.993l1.263 12c.07.665-.45 1.243-1.119 1.243H4.25a1.125 1.125 0 01-1.12-1.243l1.264-12A1.125 1.125 0 015.513 7.5h12.974c.576 0 1.059.435 1.119 1.007z"/>
+        </svg>
+      </div>
       <div class="cart-item-info">
-        <div class="cart-item-name">${item.name}</div>
+        <div class="cart-item-name">${item.name}${item.size ? ` <span style="font-weight:400;color:var(--text-muted)">· ${item.size}</span>` : ''}</div>
         <div class="cart-item-price">${(item.price * item.qty).toFixed(0)} DT
           <span class="cart-unit">(${item.price} × ${item.qty})</span>
         </div>
@@ -157,12 +228,86 @@ function clearCart() {
   renderCartItems();
 }
 
-function handleCheckout() {
-  showToast('📩 Commande envoyée ! Nous vous contacterons bientôt.');
-  cart = [];
-  saveCart(cart);
-  updateCartCount(true);
+// ── ORDER MODAL ───────────────────────────────────────────
+function initOrderModal() {
+  const overlay = document.getElementById('orderOverlay');
+  if (overlay) overlay.addEventListener('click', closeOrderModal);
+}
+
+function openOrderModal() {
+  if (cart.length === 0) return;
   closeCart();
+
+  // Populate summary
+  const summaryEl = document.getElementById('modalCartSummary');
+  if (summaryEl) {
+    summaryEl.innerHTML = cart.map(item => `
+      <div class="modal-cart-item">
+        <span class="modal-cart-item-name">${item.name}${item.size ? ` · ${item.size}` : ''} <span style="color:var(--text-muted);font-weight:400">×${item.qty}</span></span>
+        <span class="modal-cart-item-price">${(item.price * item.qty).toFixed(0)} DT</span>
+      </div>
+    `).join('');
+  }
+
+  const total = cart.reduce((s, i) => s + i.price * i.qty, 0);
+  const totalEl = document.getElementById('modalTotal');
+  if (totalEl) totalEl.textContent = total + ' DT';
+
+  document.getElementById('orderOverlay').classList.add('show');
+  document.getElementById('orderModal').classList.add('show');
+  document.body.style.overflow = 'hidden';
+
+  // Reset form fields
+  ['orderPrenom','orderNom','orderTel','orderClasse','orderNote'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) { el.value = ''; el.classList.remove('field-error'); }
+  });
+  document.querySelectorAll('#orderModal .field-error-msg').forEach(e => e.remove());
+}
+
+function closeOrderModal() {
+  document.getElementById('orderOverlay')?.classList.remove('show');
+  document.getElementById('orderModal')?.classList.remove('show');
+  document.body.style.overflow = '';
+}
+
+function submitOrder() {
+  const prenom = document.getElementById('orderPrenom');
+  const nom    = document.getElementById('orderNom');
+  const tel    = document.getElementById('orderTel');
+  let valid = true;
+
+  [prenom, nom, tel].forEach(field => {
+    clearError(field);
+    if (!field.value.trim()) { showError(field, 'Ce champ est requis'); valid = false; }
+  });
+
+  if (tel && tel.value && !/^[0-9\s\+\-\.]{6,15}$/.test(tel.value.trim())) {
+    showError(tel, 'Numéro invalide'); valid = false;
+  }
+
+  if (!valid) return;
+
+  const btn = document.querySelector('.btn-checkout-modal');
+  btn.disabled = true;
+  btn.textContent = '⏳ Envoi en cours...';
+
+  // Simulate sending
+  setTimeout(() => {
+    btn.textContent = '✓ Commande confirmée !';
+    btn.style.background = 'var(--success)';
+    showToast(`🎉 Commande confirmée ! Nous vous contacterons au ${tel.value.trim()}.`);
+
+    setTimeout(() => {
+      cart = [];
+      saveCart(cart);
+      updateCartCount(true);
+      closeOrderModal();
+      btn.textContent = 'Confirmer la commande →';
+      btn.style.background = '';
+      btn.disabled = false;
+    }, 2000);
+  }, 900);
 }
 
 // ── CART COUNT ANIMATION ──────────────────────────────────
@@ -175,7 +320,7 @@ function updateCartCount(animate = true) {
 
   if (animate && total > 0) {
     badge.classList.remove('pop');
-    void badge.offsetWidth; // reflow trigger
+    void badge.offsetWidth;
     badge.classList.add('pop');
   }
 }
@@ -195,32 +340,43 @@ function animateNumber(el, target, suffix = '') {
 
 // ── ADD TO CART ───────────────────────────────────────────
 function addToCart(btn) {
-  const card = btn.closest('.card, .hero-card');
+  const card = btn.closest('.card');
   if (!card) return;
 
-  let name, priceText, iconHTML;
-
-  if (card.classList.contains('hero-card')) {
-    name      = card.querySelector('.hero-card-name')?.textContent.trim() || 'Article';
-    priceText = card.querySelector('.hero-card-price')?.textContent || '0';
-    iconHTML  = `<svg fill="none" viewBox="0 0 24 24" stroke-width="1.3" width="26" height="26" stroke="rgba(255,255,255,.7)">
-      <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 10.5V6a3.75 3.75 0 10-7.5 0v4.5m11.356-1.993l1.263 12c.07.665-.45 1.243-1.119 1.243H4.25a1.125 1.125 0 01-1.12-1.243l1.264-12A1.125 1.125 0 015.513 7.5h12.974c.576 0 1.059.435 1.119 1.007z"/>
-    </svg>`;
-  } else {
-    name      = card.querySelector('.card-name')?.textContent.trim() || 'Article';
-    priceText = card.querySelector('.card-price')?.textContent || '0';
-    iconHTML  = card.querySelector('.card-icon')?.innerHTML || '';
+  // Check size selection for clothing
+  const sizeSelector = card.querySelector('.size-selector[data-required="true"]');
+  if (sizeSelector) {
+    const selectedSize = sizeSelector.querySelector('.size-btn.selected');
+    if (!selectedSize) {
+      let msg = sizeSelector.querySelector('.size-required-msg');
+      if (!msg) {
+        msg = document.createElement('div');
+        msg.className = 'size-required-msg';
+        msg.textContent = 'Veuillez choisir une taille';
+        sizeSelector.appendChild(msg);
+      }
+      msg.classList.add('show');
+      sizeSelector.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      return;
+    }
   }
 
-  const price    = parseFloat(priceText.replace(/[^\d.]/g, '')) || 0;
-  const existing = cart.find(i => i.name === name);
+  const name      = card.querySelector('.card-name')?.textContent.trim() || 'Article';
+  const priceText = card.querySelector('.card-price')?.textContent || '0';
+  const price     = parseFloat(priceText.replace(/[^\d.]/g, '')) || 0;
+  const size      = sizeSelector?.querySelector('.size-btn.selected')?.dataset.size || null;
+
+  // Key includes size for same item with different sizes
+  const cartKey = size ? `${name}__${size}` : name;
+  const existing = cart.find(i => i.cartKey === cartKey);
 
   if (existing) { existing.qty += 1; }
-  else           { cart.push({ name, price, qty: 1, icon: iconHTML }); }
+  else          { cart.push({ cartKey, name, price, qty: 1, size }); }
 
   saveCart(cart);
   updateCartCount(true);
-  showToast(`✓ "${name}" ajouté au panier`);
+  const label = size ? `"${name}" (${size})` : `"${name}"`;
+  showToast(`✓ ${label} ajouté au panier`);
 
   const orig = btn.textContent;
   btn.textContent = '✓ Ajouté';
@@ -254,7 +410,7 @@ function filter(tabEl, cat) {
   });
 }
 
-// ── FORM VALIDATION ───────────────────────────────────────
+// ── FORM VALIDATION (Contact) ─────────────────────────────
 function initFormValidation() {
   const sendBtn = document.querySelector('.btn-send');
   if (!sendBtn) return;
@@ -263,7 +419,7 @@ function initFormValidation() {
     e.preventDefault();
     const section = sendBtn.closest('.contact-grid > div') || sendBtn.parentElement;
 
-    const inputs = section.querySelectorAll('input[type="text"], input[type="email"]');
+    const inputs  = section.querySelectorAll('input[type="text"], input[type="email"]');
     const message = section.querySelector('.form-textarea');
     let valid = true;
 
@@ -347,5 +503,5 @@ function showToast(message) {
   toast.textContent = message;
   toast.classList.add('show');
   clearTimeout(toastTimer);
-  toastTimer = setTimeout(() => toast.classList.remove('show'), 2800);
+  toastTimer = setTimeout(() => toast.classList.remove('show'), 3000);
 }
